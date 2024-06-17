@@ -47,7 +47,6 @@ end
 function guiFunctions.deleteEmpty(content_frame)
     for _, item_frame in pairs(content_frame.children) do
         local elem = item_frame.children[1]
-        log(item_frame.name)
         if elem.elem_value == nil then
             item_frame.clear()
             item_frame.destroy()
@@ -65,7 +64,6 @@ function guiFunctions.deleteEmpty(content_frame)
 end
 function guiFunctions.index(name)
     local digits = name:match("%d+$")
-    log("digit"..digits)
     return tonumber(digits)
 end
 return guiFunctions

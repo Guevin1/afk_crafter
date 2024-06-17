@@ -4,6 +4,17 @@ local interfacesMod = require("gui.interface")
 function getSettings(name)
     return settings.startup["afkc_"..name].value
 end
+function search(name,player_index)
+    local result = false
+    if global.players ~= nil and global.players[player_index] ~= nil and global.players[player_index].queue ~= nil then
+        for _, value in pairs(global.players[player_index].queue) do
+            if value.name == name then
+                result = true
+            end
+        end
+    end
+    return result
+end
 commands.add_command("break_point",nil,function (p1)
     log("break_point")
 end)
@@ -95,11 +106,11 @@ script.on_event(defines.events.on_gui_click, function (event)
         ParentChildren[1].elem_value = nil
         ParentChildren[2].enabled = false
         ParentChildren[3].enabled = false
-        interfacesMod.deleteEmpty(event.element.parent.parent)
+        local id = interfacesMod.index(event.element.parent.name)
         local playerGlobalData = global.players[event.player_index]
-        local id = interfacesMod.index(ParentChildren.parent.name)
-        if elem_value ~= nil and playerGlobalData ~= nil and playerGlobalData["queue"] ~= nil and playerGlobalData["queue"][id] ~= nil then
-            global.players[event.player_index]["queue"][id] = nil
+        interfacesMod.deleteEmpty(event.element.parent.parent)
+        if playerGlobalData ~= nil and playerGlobalData.queue ~= nil and playerGlobalData.queue[id] ~= nil then
+            global.players[event.player_index].queue[id] = nil
         end
         
     end
@@ -115,7 +126,15 @@ script.on_event(defines.events.on_gui_elem_changed, function (event)
         local GuiElement = event.element
         local parentGui = GuiElement.parent
         local slider = content_frame[parentGui.name].children[2]
-        if GuiElement.elem_value ~= nil and game.item_prototypes[GuiElement.elem_value] ~= nil then
+        if global.players[event.player_index] == nil then
+            global.players[event.player_index] = {}
+            global.players[event.player_index].queue = {}
+        end
+        if global.players[event.player_index].queue == nil then
+            global.players[event.player_index].queue = {}
+        end
+        local id = interfacesMod.index(parentGui.name)
+        if GuiElement.elem_value ~= nil and game.item_prototypes[GuiElement.elem_value] ~= nil and not search(GuiElement.elem_value,event.player_index) then
             
             slider.enabled = true
             slider.slider_value = 1 
@@ -123,16 +142,7 @@ script.on_event(defines.events.on_gui_elem_changed, function (event)
             content_frame[parentGui.name].children[3].enabled = true
             content_frame[parentGui.name].children[3].text = "1"
             interfacesMod.deleteEmpty(parentGui.parent)
-            if global.players[event.player_index] == nil then
-                global.players[event.player_index] = {}
-                global.players[event.player_index].queue = {}
-            end
-            if global.players[event.player_index].queue == nil then
-                global.players[event.player_index].queue = {}
-            end
 
-            local id = interfacesMod.index(parentGui.name)
-            log(id)
             recipeCraft = global.players[event.player_index].queue[id]
             if recipeCraft == nil then
                 recipeCraft = {}
@@ -140,12 +150,13 @@ script.on_event(defines.events.on_gui_elem_changed, function (event)
             recipeCraft["name"] = GuiElement.elem_value
             recipeCraft["count"] = 1;
             
-            log(id)
-            table.insert(global.players[player.index].queue,id,recipeCraft)
+            global.players[event.player_index].queue[id] = recipeCraft
         else
             GuiElement.elem_value = nil
             content_frame[parentGui.name].children[2].enabled = false
             content_frame[parentGui.name].children[3].enabled = false
+            global.players[event.player_index].queue[id] = nil
+
         end    
     end
     
