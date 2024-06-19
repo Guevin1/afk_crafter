@@ -48,7 +48,6 @@ function guiFunctions.item_add(itemFrame,item_name)
     local buttonE = true
     local itemIsEmpty = item_name ~= nil
     local switch = itemFrame.parent.parent.parent.afkc_switch
-    log(switch)
     if item_name ~= nil then
         recipeName = item_name.name
         maxCount = tonumber(game.item_prototypes[item_name.name].stack_size)

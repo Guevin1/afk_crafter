@@ -144,8 +144,7 @@ script.on_event(defines.events.on_gui_switch_state_changed,function (event)
     local state = elem.switch_state
     local content_frame = player.gui.screen.afkc_interface.afkc_content_scrollbar.afkc_content
     local playerGlobalData = global.players[event.player_index]
-    local isGlobalPlayer = playerGlobalData ~= nil and playerGlobalData.queue ~= nil 
-    log(isGlobalPlayer)
+    local isGlobalPlayer = playerGlobalData ~= nil and playerGlobalData.queue ~= nil
     if elem.name == "afkc_switch" and isGlobalPlayer then
         local stat = false
         if state == "left" then
@@ -243,7 +242,6 @@ script.on_event(defines.events.on_gui_text_changed, function (event)
     end
 end)
 script.on_event(defines.events.on_gui_closed,function (event)
-    log("on_gui_closed")
     if event.element and event.element.name == "afkc_interface" then
 
         local player = game.players[event.player_index]
