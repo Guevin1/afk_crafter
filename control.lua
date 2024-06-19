@@ -1,6 +1,8 @@
 local mod_gui = require("mod-gui")
 local interfacesMod = require("gui.interface")
 
+local indexGui = interfacesMod.guiIndex
+
 function getSettings(name)
     return settings.startup["afkc_"..name].value
 end
@@ -24,7 +26,7 @@ commands.add_command("items_add", nil, function (command)
             table.insert(parametrs, param)
         end
         
-        table.insert(itemsName, {name=parametrs[1],count=parametrs[2]})
+        table.insert(itemsName, {name=parametrs[1],count=parametrs[indexGui+1]})
         if global.players == nil then
             global.players = {}
         end
@@ -46,7 +48,11 @@ local function craft()
         for _,item in pairs(itemsName) do
 
             local recipeName = item.name
-            if player.character and #recipeName > 0 and game.recipe_prototypes[recipeName] and game.item_prototypes[recipeName] then
+            local isOnCraft = true
+            if item["enabled"] ~= nil then
+                isOnCraft = item["enabled"]
+            end
+            if player.character and isOnCraft and #recipeName > 0 and game.recipe_prototypes[recipeName] and game.item_prototypes[recipeName] then
                 if player.crafting_queue_size > 0 then
                     return
                 end        
@@ -67,8 +73,10 @@ local function craft()
                 end
                 if not is_crafting and countInInventory+countInQuery < count then
                     local countCraft = (multipecraft and count-(countInInventory+countInQuery)) or 1
-                    player.begin_crafting{count=countCraft,recipe=recipe.name,silent=true}
-                    break
+                    local itemCount = player.begin_crafting{count=countCraft,recipe=recipe.name,silent=true}
+                    if itemCount ~= 0 then
+                        break
+                    end
                 end    
             end
         end
@@ -84,6 +92,7 @@ function toggle_interface(player)
     local main_frame = player.gui.screen.afkc_interface
     if main_frame == nil then
         interfacesMod.buildInterface(player)
+        player.opened = player.gui.screen.afkc_interface    
     else 
         main_frame.destroy()
     end
@@ -102,13 +111,13 @@ script.on_event(defines.events.on_gui_click, function (event)
         toggle_interface(player)
     end
     if buttonName:find("afkc_elem_reset") then
-        local ParentChildren = event.element.parent.children
-        ParentChildren[1].elem_value = nil
-        ParentChildren[2].enabled = false
-        ParentChildren[3].enabled = false
-        local id = interfacesMod.index(event.element.parent.name)
+        local ParentChildren = event.element.parent.parent.children
+        ParentChildren[indexGui].elem_value = nil
+        ParentChildren[indexGui+1].enabled = false
+        ParentChildren[indexGui+2].enabled = false
+        local id = interfacesMod.index(event.element.parent.parent.name)
         local playerGlobalData = global.players[event.player_index]
-        interfacesMod.deleteEmpty(event.element.parent.parent)
+        interfacesMod.deleteEmpty(event.element.parent.parent.parent)
         if playerGlobalData ~= nil and playerGlobalData.queue ~= nil and playerGlobalData.queue[id] ~= nil then
             global.players[event.player_index].queue[id] = nil
         end
@@ -118,14 +127,47 @@ script.on_event(defines.events.on_gui_click, function (event)
         player.gui.screen.afkc_interface.destroy()
     end
 end)
+
+script.on_event(defines.events.on_gui_checked_state_changed,function (event)
+
+    local elem = event.element
+    if elem.name == "afkc_disable" then
+        local tableS = elem.parent.parent
+        local isOn = not elem.state
+        interfacesMod.enableInterface(isOn,event.player_index,tableS)
+    end
+end)
+
+script.on_event(defines.events.on_gui_switch_state_changed,function (event)
+    local player = game.players[event.player_index]
+    local elem = event.element
+    local state = elem.switch_state
+    local content_frame = player.gui.screen.afkc_interface.afkc_content_scrollbar.afkc_content
+    local playerGlobalData = global.players[event.player_index]
+    local isGlobalPlayer = playerGlobalData ~= nil and playerGlobalData.queue ~= nil 
+    log(isGlobalPlayer)
+    if elem.name == "afkc_switch" and isGlobalPlayer then
+        local stat = false
+        if state == "left" then
+            stat = true
+        end
+        for _, value in pairs(content_frame.children) do
+            interfacesMod.enableInterface(stat,event.player_index,value)
+            value.children[1].children[1].state = not stat
+        end   
+    end
+
+    
+end)
+
 script.on_event(defines.events.on_gui_elem_changed, function (event)
     
     if event.element.name:find("afkc_choose_elem") then
         local player = game.players[event.player_index]
-        local content_frame = player.gui.screen.afkc_interface.afkc_frame
+        local content_frame = player.gui.screen.afkc_interface.afkc_content_scrollbar.afkc_content
         local GuiElement = event.element
         local parentGui = GuiElement.parent
-        local slider = content_frame[parentGui.name].children[2]
+        local slider = content_frame[parentGui.name].children[indexGui+1]
         if global.players[event.player_index] == nil then
             global.players[event.player_index] = {}
             global.players[event.player_index].queue = {}
@@ -139,8 +181,8 @@ script.on_event(defines.events.on_gui_elem_changed, function (event)
             slider.enabled = true
             slider.slider_value = 1 
             slider.set_slider_minimum_maximum(0,game.item_prototypes[GuiElement.elem_value].stack_size)
-            content_frame[parentGui.name].children[3].enabled = true
-            content_frame[parentGui.name].children[3].text = "1"
+            content_frame[parentGui.name].children[indexGui+2].enabled = true
+            content_frame[parentGui.name].children[indexGui+2].text = "1"
             interfacesMod.deleteEmpty(parentGui.parent)
 
             recipeCraft = global.players[event.player_index].queue[id]
@@ -149,12 +191,20 @@ script.on_event(defines.events.on_gui_elem_changed, function (event)
             end
             recipeCraft["name"] = GuiElement.elem_value
             recipeCraft["count"] = 1;
-            
+            recipeCraft["enabled"] = true
             global.players[event.player_index].queue[id] = recipeCraft
+            local ButtonsFlow = content_frame[parentGui.name].children[1].children
+            for _, value in pairs(ButtonsFlow) do
+                value.enabled = true
+            end
         else
             GuiElement.elem_value = nil
-            content_frame[parentGui.name].children[2].enabled = false
-            content_frame[parentGui.name].children[3].enabled = false
+            content_frame[parentGui.name].children[indexGui+1].enabled = false
+            content_frame[parentGui.name].children[indexGui+1].enabled = false
+            local ButtonsFlow = content_frame[parentGui.name].children[1].children
+            for _, value in pairs(ButtonsFlow) do
+                value.enabled = false
+            end
             global.players[event.player_index].queue[id] = nil
 
         end    
@@ -166,8 +216,8 @@ script.on_event(defines.events.on_gui_value_changed, function (event)
         local GuiElement = event.element
         local slider_value = event.element.slider_value
         local ParentChildren = GuiElement.parent.children
-        ParentChildren[3].text = tostring(slider_value)
-        local elem_value = ParentChildren[1].elem_value
+        ParentChildren[indexGui+2].text = tostring(slider_value)
+        local elem_value = ParentChildren[indexGui].elem_value
         local playerGlobalData = global.players[event.player_index]
         local id = interfacesMod.index(GuiElement.parent.name)
         if elem_value ~= nil and playerGlobalData ~= nil and playerGlobalData["queue"] ~= nil and playerGlobalData["queue"][id] ~= nil then
@@ -183,8 +233,8 @@ script.on_event(defines.events.on_gui_text_changed, function (event)
             value = 0
         end
         local ParentChildren = GuiElement.parent.children
-        ParentChildren[2].slider_value = tonumber(value)
-        local elem_value = ParentChildren[1].elem_value
+        ParentChildren[indexGui+1].slider_value = tonumber(value)
+        local elem_value = ParentChildren[indexGui].elem_value
         local playerGlobalData = global.players[event.player_index]
         local id = interfacesMod.index(GuiElement.parent.name)
         if elem_value ~= nil and playerGlobalData ~= nil and playerGlobalData["queue"] ~= nil and playerGlobalData["queue"][id] ~= nil then
@@ -192,6 +242,18 @@ script.on_event(defines.events.on_gui_text_changed, function (event)
         end
     end
 end)
+script.on_event(defines.events.on_gui_closed,function (event)
+    log("on_gui_closed")
+    if event.element and event.element.name == "afkc_interface" then
+
+        local player = game.players[event.player_index]
+        player.opened = nil
+        player.gui.screen.afkc_interface.destroy()
+    end
+end)
+
+
+-- ButtonFlow gui init
 
 function initmod()
     if global.players == nil then
@@ -201,11 +263,12 @@ function initmod()
         if global.players[player.index] == nil then
             global.players[player.index] = {}
         end
-        global.players[player.index].queue = {}
+        if global.players[player.index].queue == nil then
+            global.players[player.index].queue = {}
+        end
         createButtonFlow(player)
     end
 end
--- ButtonFlow gui init
 script.on_event(defines.events.on_player_joined_game,function (event)
     initmod()
 end)

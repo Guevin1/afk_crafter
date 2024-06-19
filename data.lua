@@ -1,7 +1,12 @@
 local styles = data.raw["gui-style"].default
+styles["afkc_interface"] = {
+    
+    type = "frame_style",
+    height = 600
+}
 styles["afkc_content_frame"] = {
     type = "frame_style",
-    parent = "inside_shallow_frame_with_padding",
+    parent = "inside_shallow_frame_with_padding"
 }
 styles["afkc_choose_elem"] = {
     type = "button_style",
@@ -22,4 +27,15 @@ styles["afkc_empty_widget"] = {
     height = 24,
     left_margin = 4,
     right_margin = 4
+}
+styles["afkc_buttons"] = {
+    type="button_style",
+    parent="tool_button_red"
+}
+styles["afkc_buttons_check"] = {
+    type="checkbox_style"
+}
+styles["afkc_content_scrollbar"] = {
+    type="vertical_scrollbar_style",
+    height=400
 }
