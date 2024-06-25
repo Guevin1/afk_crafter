@@ -253,8 +253,11 @@ script.on_event(defines.events.on_gui_text_changed, function (event)
         if not item_stack_size then
             return
         end
-
-        ParentChildren[indexGui+1].slider_value = interfacesMod.parse_item_count_to_slider_value(tonumber(value), item_stack_size)
+        local slider_value = interfacesMod.parse_slider_value_to_item_count(ParentChildren[indexGui+1].slider_value, item_stack_size)
+        if slider_value == nil and value > item_stack_size then
+            slider_value = item_stack_size
+        end
+        ParentChildren[indexGui+1].slider_value = slider_value
         local elem_value = ParentChildren[indexGui].elem_value
         local playerGlobalData = global.players[event.player_index]
         local id = interfacesMod.index(GuiElement.parent.name)
