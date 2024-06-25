@@ -81,7 +81,7 @@ function toggle_interface(player)
     local main_frame = player.gui.screen.afkc_interface
     if main_frame == nil then
         interfacesMod.buildInterface(player)
-        player.opened = player.gui.screen.afkc_interface    
+        player.opened = player.gui.screen.afkc_interface
     else
         main_frame.destroy()
     end
@@ -166,12 +166,16 @@ script.on_event(defines.events.on_gui_elem_changed, function (event)
 
         local id = interfacesMod.index(parentGui.name)
         if GuiElement.elem_value ~= nil and game.item_prototypes[GuiElement.elem_value] ~= nil and not search(GuiElement.elem_value,event.player_index) then
+            local stack_size = game.item_prototypes[GuiElement.elem_value].stack_size
+            local range = interfacesMod.get_slider_min_max(stack_size)
+            local min_value = interfacesMod.parse_slider_value_to_item_count(range.min, stack_size)
+
             slider.enabled = true
-            slider.slider_value = 1 
-            slider.set_slider_minimum_maximum(0,game.item_prototypes[GuiElement.elem_value].stack_size)
+            slider.slider_value = range.min
+            slider.set_slider_minimum_maximum(range.min, range.max)
 
             content_frame[parentGui.name].children[indexGui+2].enabled = true
-            content_frame[parentGui.name].children[indexGui+2].text = "1"
+            content_frame[parentGui.name].children[indexGui+2].text = tostring(min_value)
 
             interfacesMod.deleteEmpty(parentGui.parent)
             recipeCraft = global.players[event.player_index].queue[id]
@@ -180,7 +184,7 @@ script.on_event(defines.events.on_gui_elem_changed, function (event)
                 recipeCraft = {}
             end
             recipeCraft["name"] = GuiElement.elem_value
-            recipeCraft["count"] = 1;
+            recipeCraft["count"] = min_value;
             recipeCraft["enabled"] = true
             global.players[event.player_index].queue[id] = recipeCraft
 
@@ -203,11 +207,27 @@ script.on_event(defines.events.on_gui_elem_changed, function (event)
     end
 end)
 
+local function get_item_stack(ParentChildren)
+    local item_name = ParentChildren[indexGui].elem_value
+
+    if not game.item_prototypes[item_name] then
+        return
+    end
+
+    return game.item_prototypes[item_name].stack_size
+end
+
 script.on_event(defines.events.on_gui_value_changed, function (event)
     if event.element.name:find("afkc_slider") then
-        local slider_value = event.element.slider_value
         local GuiElement = event.element
         local ParentChildren = GuiElement.parent.children
+        local item_stack_size = get_item_stack(ParentChildren)
+
+        if not item_stack_size then
+            return
+        end
+
+        local slider_value = interfacesMod.parse_slider_value_to_item_count(event.element.slider_value, item_stack_size)
         ParentChildren[indexGui+2].text = tostring(slider_value)
 
         local elem_value = ParentChildren[indexGui].elem_value
@@ -228,8 +248,13 @@ script.on_event(defines.events.on_gui_text_changed, function (event)
         if value == nil or #value == 0 then
             value = 0
         end
+        local item_stack_size = get_item_stack(ParentChildren)
 
-        ParentChildren[indexGui+1].slider_value = tonumber(value)
+        if not item_stack_size then
+            return
+        end
+
+        ParentChildren[indexGui+1].slider_value = interfacesMod.parse_item_count_to_slider_value(tonumber(value), item_stack_size)
         local elem_value = ParentChildren[indexGui].elem_value
         local playerGlobalData = global.players[event.player_index]
         local id = interfacesMod.index(GuiElement.parent.name)
