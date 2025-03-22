@@ -1,0 +1,13 @@
+{
+    "factorio.versions": [
+        {
+            "name": "2.0.42 space age",
+            "factorioPath": "/home/guevin1/Рабочий стол/factorio/bin/x64/factorio",
+            "active": true
+        }
+    ],
+    "Lua.workspace.userThirdParty": [
+        "/home/guevin1/.config/Code/User/workspaceStorage/e28c0609c4b48d6375f68099ac7f1a21/justarandomgeek.factoriomod-debug/sumneko-3rd"
+    ],
+    "Lua.workspace.checkThirdParty": "ApplyInMemory"
+}
