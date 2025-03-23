@@ -1,4 +1,5 @@
 local playerTable = require("playerTable")
+local gui = require("ui.main")
 commands.add_command("testRecipe",nil, function (p1)
     playerTable.addRecipe(1,"iron-gear-wheel",10)
     playerTable.addRecipe(1,"copper-cable",10,0,10)
@@ -15,7 +16,8 @@ end)
 commands.add_command("resetafkc", nil, function (p1)
     playerTable.initTables()
     initModPlayers()
-    game.print("reset AFK crafter! ")
+    game.print("reset AFK crafter!")
+    gui.createFlowButton(p1.player_index)
 end)
 function initModPlayers()
     if not playerTable.isTableInit() then
@@ -26,17 +28,20 @@ function initModPlayers()
         if playerTable.getPlayer(player.index) == nil then
             playerTable.addPlayer(player.index)
             playerTable.createGroup(player,"New Collection")
+            gui.createFlowButton(player.index)
         end
+
     end
 end
 function crafting()
     
     for _, player in pairs(game.players) do
         local playerInfo = playerTable.getPlayer(player.index)
-        local crafting_queue = player.crafting_queue
-        if playerInfo["active"] > 0 and player.character ~= nil and (crafting_queue == nil or #crafting_queue == 0) then
+        if playerInfo["active"] > 0 and player.character ~= nil then
+                
+            local crafting_queue = player.crafting_queue
             local group = playerTable.getGroup(playerInfo["active"])
-            if (#group["surfaces"] == 0 or table.contains(group["surfaces"],player.surface_index)) then
+            if (#group["surfaces"] == 0 or table.contains(group["surfaces"],player.surface_index)) and (crafting_queue == nil or #crafting_queue == 0) then
                 if (#group["recipes"] > 0) then
                     for _, recipe in pairs(group["recipes"]) do
                         local createRecipe = recipe["enabled"]
