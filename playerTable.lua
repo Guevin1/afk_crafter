@@ -20,9 +20,13 @@ function functions.getPlayerGroup()
 end
 
 function functions.getGroup(id)
-    local group = functions.getTableGroup()[id]
-    if group ~= nil then
-        return group
+    if type(id) == "number" then
+        id = "group"..id
+    end
+    
+    local groups = functions.getTableGroup()
+    if groups ~= nil then
+        return groups[id]
     end
 end
 
@@ -90,6 +94,13 @@ end
 function functions.createGroup(player, name,icon)
     local groups = functions.getTableGroup()
     if groups ~= nil then
+        local keys = {}
+        for key,_ in pairs(groups) do
+            local name = tostring(key):gsub("group","")
+            table.insert(keys,tonumber(name)+1)
+        end
+        table.sort(keys, function(a,b) return a > b end)
+        local id = keys[1] or 1
         local configGroup = {
             name = name,
             owner = player.index,
@@ -97,10 +108,8 @@ function functions.createGroup(player, name,icon)
             surfaces = {},
             icon = icon or "iron-gear-wheel",
         }
-        
-        
-        table.insert(groups,configGroup)
-        local idGroup = #groups
+        idGroup = "group"..id
+        groups[idGroup] = configGroup
         functions.addPlayerInGroup(player.index,idGroup)
         functions.setActiveGroup(player.index, idGroup)
     end
@@ -117,6 +126,7 @@ function functions.recipeInGroup(groupID,recipe)
         return founded
     end    
 end
+print()
 function functions.addRecipe(groupID,recipe,max,min,priorety)
     local group = functions.getGroup(groupID)
     if group ~= nil then

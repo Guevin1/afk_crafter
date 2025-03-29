@@ -79,7 +79,7 @@ function functionsGui.initScreen(player)
         type="flow",
         name="content"
     }
-    local groupID = 1
+    local groupID = playerTable.getPlayer(player.index)["active"]
     group = playerTable.getGroup(groupID)
     local scrollPaneRecipes = content.add{
         type="scroll-pane",

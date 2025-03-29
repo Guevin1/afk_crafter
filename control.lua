@@ -19,12 +19,14 @@ local gui = require("ui.main")
 --         playerTable.createGroup(p,"Collection #"..tostring(idCollection))
 --     end
 -- end)
--- commands.add_command("break",nil, function (p1)
---     print("Break")
--- end)
-
+commands.add_command("break",nil, function (p1)
+    print("Break")
+end)
+commands.add_command('send',nil,function (p1)
+    game.print(serpent.block(storage["afkCrafter"]))
+end)
 function getSettings(type,name)
-        return settings[type]["afkCrafter_"..name].value
+    return settings[type]["afkCrafter_"..name].value
 end
 
 commands.add_command("resetafkc", nil, function (p1)
@@ -51,7 +53,7 @@ function crafting()
     
     for _, player in pairs(game.players) do
         local playerInfo = playerTable.getPlayer(player.index)
-        if playerInfo["active"] > 0 and player.character ~= nil then
+        if playerInfo["active"] ~= nil and player.character ~= nil then
                 
             local crafting_queue = player.crafting_queue
             local group = playerTable.getGroup(playerInfo["active"])

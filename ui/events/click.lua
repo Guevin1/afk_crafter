@@ -18,7 +18,6 @@ local function GuiClick(event)
             RecipeFrame = MainFrame.content.RecipeScroll.RecipeFrame
         end
         local FrameRecipe = nil
-        local nameRecipe = nil
         if recipeID ~= nil then
             FrameRecipe = RecipeFrame[recipeID]
         end
