@@ -20,13 +20,12 @@ local function GuiClick(event)
         local FrameRecipe = nil
         local nameRecipe = nil
         if recipeID ~= nil then
-            nameRecipe = "recipe"..recipeID
-            FrameRecipe = RecipeFrame[nameRecipe].recipe
+            FrameRecipe = RecipeFrame[recipeID]
         end
         if action == "toggle" then
             if MainFrame == nil then
                 functionsGui.initScreen(player)
-                player.opened=MainFrame
+                player.opened = player.gui.screen.afkCrafter
             else
                 MainFrame.destroy()
                 player.opened = nil
@@ -36,10 +35,10 @@ local function GuiClick(event)
             player.opened = nil
         elseif action == "priorety" then
             local priorety = playerTable.addRecipePriorety(groupID,recipeID,val)
-            FrameRecipe.PrioretyBox.textfield.text = tostring(priorety)
+            functionsGui.reloadRecipes(RecipeFrame,groupID)
         elseif action == "deleteRecipe" then
             playerTable.deleteRecipe(groupID,recipeID)
-            RecipeFrame[nameRecipe].destroy()
+            FrameRecipe.destroy()
         end
     end
 end

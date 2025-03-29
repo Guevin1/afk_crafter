@@ -17,27 +17,30 @@ function checkbox(event)
         local nameRecipe = nil
         local FrameRecipe = nil
         if recipeID ~= nil then
-            nameRecipe = "recipe"..recipeID
-            FrameRecipe = RecipeFrame[nameRecipe].recipe
+            FrameRecipe = RecipeFrame[recipeID].recipe
         end
         if action == "toggle_recipe" then
-            
-            recipe["enabled"] = val
-            local elements = FrameRecipe.children
             if recipeID ~= nil then
-                while #elements > 0 do
-                    value = table.remove(elements,1) 
-                    if value.name ~=  "buttons" then
-                        value.enabled = val
-                        if value.children ~= nil then
-                                
-                            print(#value.children)
-                            for k,v in pairs(value.children) do table.insert(elements,v) end
+                recipe["enabled"] = val
+                local elements = FrameRecipe.children
+                if recipeID ~= nil then
+                    while #elements > 0 do
+                        value = table.remove(elements,1) 
+                        if value.name ~=  "buttons" then
+                            value.enabled = val
+                            if value.children ~= nil then
+                                    
+                                print(#value.children)
+                                for k,v in pairs(value.children) do table.insert(elements,v) end
+                            end
                         end
+                        
                     end
-                    
                 end
+            else
+                event.element.state = true
             end
+            
             
         end 
     end

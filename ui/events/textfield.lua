@@ -18,12 +18,11 @@ local function TextfieldChange(event)
         end
         local FrameRecipe = nil
         if recipeID ~= nil then
-            local nameRecipe = "recipe"..recipeID
-            FrameRecipe = RecipeFrame[nameRecipe].recipe
+            FrameRecipe = RecipeFrame[recipeID]
         end
         if action == "maxRecipeCount" then
             recipe["rs"]["max"] = tonumber(event.text) or 0
-            FrameRecipe.count.slider.slider_value=tonumber(event.text) or 0
+            FrameRecipe.recipe.count.slider.slider_value=tonumber(event.text) or 0
         elseif action == "minRecipeCount" then
             recipe["rs"]["min"] = tonumber(event.text) or 0
         elseif action == "countBlack" then

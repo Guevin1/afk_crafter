@@ -1,9 +1,12 @@
 functionsGui = {}
 local mod_gui = require("mod-gui")
-require("click")
-require("textfield")
-require("elemchoose")
-require("checkbox")
+require("events/click")
+require("events/textfield")
+require("events/elemchoose")
+require("events/checkbox")
+require("events/closegui")
+require("events/slider")
+require("events/dropdown")
 function functionsGui.createFlowButton(player_index)
     local player = game.get_player(player_index)
     if player ~= nil then
@@ -88,96 +91,146 @@ function functionsGui.initScreen(player)
         style="inside_shallow_frame_with_padding",
         direction="vertical",
         name="RecipeFrame",
-
     }
-    print(group["recipes"])
-    for key, value in pairs(group["recipes"]) do
-        local Table = recipesBox.add{
-            type="frame",
-            name="recipe"..key,
-            direction="vertical"
-        }
-        ItemBuildGUI(Table,value,groupID,key)
-        local BlackList = Table.add{
-            type="flow"
-        }
-        local needed = value["needed"]
-        for need = 1, #needed+1, 1 do
-            local value = needed[need] or {}
-
-            local l = BlackList.add{
-                type="flow",
-                direction="horizontal"
-            }
-            local enabled = table_size(value) > 0
-            l.style.vertical_align="center"
-            l.add{
-                type="choose-elem-button",
-                elem_type="item",
-                item=value["name"],
-                tags={
-                    parent="afkCrafter",
-                    action="changeBlack",
-                    needID=need,
-                    groupID=groupID
-                },
-            }
-            local setNeed = {
-                "!=",
-                "=",
-                "<",
-                ">"
-            }
-            local iK = 1
-            for key,val in pairs(setNeed) do
-                if value["type"] == val then
-                    iK = key
-                    break 
-                end
-            end
-
-            local list = l.add{
-                type="drop-down",
-                items=setNeed,
-                selected_index=iK,
-                enabled=enabled,
-                tags={
-                    parent="afkCrafter",
-                    action="dropBlack",
-                    needID=need,
-                    groupID=groupID
-                },
-            }
-            
-            list.style.width=56
-            l.add{
-                type="textfield",
-                style="afkCrafter.numeric",
-                text=value["count"] or 0,
-                numeric=true,
-                tags={
-                    parent="afkCrafter",
-                    action="countBlack",
-                    recipeID=key,
-                    needID=need,
-                    groupID=groupID
-                },
-                enabled=enabled
-            }
+    functionsGui.reloadRecipes(recipesBox,groupID,group)
+end
+---comment
+---@param neededList LuaGuiElement
+---@param value any
+---@param groupID any
+---@param recipeID any
+function functionsGui.reloadNeeded(neededList,valueRec,groupID,recipeID)
+    neededList.clear()
+    local needed = valueRec["needed"] or {}
+    for need = 1, table_size(needed) + 1, 1 do
+        local needID = "need"..need
+        local value = needed[needID] or {}
+        if table_size(value) == 0 then
+            needID = nil
         end
+        local l = neededList.add{
+            type="flow",
+            direction="horizontal"
+        }
+        local enabled = table_size(value) > 0
+        l.style.vertical_align="center"
+        l.add{
+            type="choose-elem-button",
+            elem_type="item",
+            item=value["name"],
+            enabled=table_size(valueRec) > 0,
+            tags={
+                parent="afkCrafter",
+                action="changeBlack",
+                needID=needID,
+                groupID=groupID,
+                recipeID=recipeID,
+            },
+        }
+        local setNeed = {
+            "!=",
+            "=",
+            "<",
+            ">",
+            ">=",
+            "<=",
+        }
+        local iK = 1
+        for key,val in pairs(setNeed) do
+            if value["type"] == val then
+                iK = key
+                break 
+            end
+        end
+
+        local list = l.add{
+            type="drop-down",
+            items=setNeed,
+            selected_index=iK,
+            enabled=enabled,
+            tags={
+                parent="afkCrafter",
+                action="dropBlack",
+                needID=needID,
+                groupID=groupID,
+                recipeID=recipeID,
+
+            },
+        }
+        
+        list.style.width=56
+        l.add{
+            type="textfield",
+            style="afkCrafter.numeric",
+            text=value["count"] or "0",
+            numeric=true,
+            tags={
+                parent="afkCrafter",
+                action="countBlack",
+                recipeID=recipeID,
+                needID=needID,
+                groupID=groupID,
+                
+            },
+            enabled=enabled
+        }
     end
 end
-
-
+---@param recipesBox LuaGuiElement
+function functionsGui.reloadRecipes(recipesBox,groupID,group)
+    if group ==nil then
+        group = playerTable.getGroup(groupID)
+    end
+    recipesBox.clear()
+    local keys = {}
+    local oldN = 0
+    for key,_ in pairs(group["recipes"]) do
+        local name = tostring(key):gsub("recipe","")
+        local id = tonumber(name)
+        if oldN < id then
+            oldN = id
+        end
+        table.insert(keys,id)
+    end
+    table.insert(keys, oldN+1)
+    for _,key in pairs(keys) do
+        recipeID = "recipe"..key
+        value = group["recipes"][recipeID]
+        local Table = recipesBox.add{
+            type="frame",
+            name=recipeID,
+            direction="vertical"
+        }
+        if value == nil then
+            value = {}
+        end
+        functionsGui.ItemBuildGUI(Table,value,groupID,key)
+        local neededList = Table.add{
+            type="table",
+            column_count=2,
+            name="neededList"
+        }
+        functionsGui.reloadNeeded(neededList,value,groupID,recipeID)
+    end
+end
 function getStackSize(nameRecipe,idProduct)
-    local nameItem = prototypes.recipe[nameRecipe].products[idProduct].name
-    return prototypes.item[nameItem].stack_size
+    if nameRecipe ~= nil then
+        
+        local nameItem = prototypes.recipe[nameRecipe].products[idProduct].name
+        return prototypes.item[nameItem].stack_size
+    end
+    return 0
 end
 
 ---comment
 ---@param Table LuaGuiElement
-function ItemBuildGUI(Table, value,groupID,key)
-    local enabled = value["enabled"]
+function functionsGui.ItemBuildGUI(Table, value,groupID,key)
+    Table.clear()
+    local recipeID = "recipe"..key
+    if table_size(value) == 0 then
+        recipeID = nil
+    end
+    local enabled = value["enabled"] or true
     local isEmpty = value["name"] ~= nil
     local IandE= enabled and isEmpty
     local ElementGui = Table.add{
@@ -194,13 +247,13 @@ function ItemBuildGUI(Table, value,groupID,key)
     }
     ButtonsRecipe.add{
         type="checkbox",
-        state=value["enabled"],
+        state=enabled,
         vertical_align="center",
         horizontal_align="center",
         tags={
             parent="afkCrafter",
             action="toggle_recipe",
-            recipeID=key,
+            recipeID=recipeID,
             groupID=groupID,
         }
     }
@@ -213,7 +266,7 @@ function ItemBuildGUI(Table, value,groupID,key)
         tags={
             parent="afkCrafter",
             action="deleteRecipe",
-            recipeID=key,
+            recipeID=recipeID,
             groupID=groupID,
         }
     }
@@ -244,7 +297,7 @@ function ItemBuildGUI(Table, value,groupID,key)
         tags={
             parent="afkCrafter",
             action="change_recipe",
-            recipeID=key,
+            recipeID=recipeID,
             groupID=groupID,
         }
     }
@@ -254,7 +307,7 @@ function ItemBuildGUI(Table, value,groupID,key)
         enabled=IandE
     }
     CountContainer.style.vertical_align="center"
-    local rsT = value["rs"]
+    local rsT = value["rs"] or {min=0,max=0}
 
     CountContainer.add{
         type="textfield",
@@ -266,22 +319,26 @@ function ItemBuildGUI(Table, value,groupID,key)
         tags={
             parent="afkCrafter",
             action="minRecipeCount",
-            recipeID=key,
+            recipeID=recipeID,
             groupID=groupID
         },
         enabled=IandE
 
     }
+    maxCount = getStackSize(value["name"],value["productID"])
+    if maxCount == 0 then
+        maxCount = 1
+    end
     CountContainer.add{
         type="slider",
         minimum_value=rsT["min"],
-        maximum_value=getStackSize(value["name"],value["productID"])*10,
+        maximum_value=maxCount*1,
         value=rsT["max"],
         name="slider",
         tags={
             parent="afkCrafter",
             action="count",
-            recipeID=key,
+            recipeID=recipeID,
             groupID=groupID
         },
         enabled=IandE
@@ -297,7 +354,7 @@ function ItemBuildGUI(Table, value,groupID,key)
         tags={
             parent="afkCrafter",
             action="maxRecipeCount",
-            recipeID=key,
+            recipeID=recipeID,
             groupID=groupID
         },
         enabled=IandE
@@ -326,7 +383,7 @@ function ItemBuildGUI(Table, value,groupID,key)
         tags={
             parent="afkCrafter",
             action="setPriorety",
-            recipeID=key,
+            recipeID=recipeID,
             groupID=groupID
         },
         enabled=IandE
@@ -346,7 +403,7 @@ function ItemBuildGUI(Table, value,groupID,key)
             parent="afkCrafter",
             action="priorety",
             value=-1,
-            recipeID=key,
+            recipeID=recipeID,
             groupID=groupID
         },
         enabled=IandE
@@ -360,7 +417,7 @@ function ItemBuildGUI(Table, value,groupID,key)
             parent="afkCrafter",
             action="priorety",
             value=1,
-            recipeID=key,
+            recipeID=recipeID,
             groupID=groupID
         },
         enabled=IandE

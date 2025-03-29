@@ -29,7 +29,6 @@ end
 function functions.getRecipe(groupID, recipeID)
     local group = functions.getGroup(groupID)
     if group ~= nil then
-        local nameRecipe = "recipe"..recipeID
         return group["recipes"][recipeID]
     end
 end
@@ -124,9 +123,7 @@ function functions.addRecipe(groupID,recipe,max,min,priorety)
         if not functions.recipeInGroup(groupID,recipe) then
             local keys = {}
             for key,_ in pairs(group["recipes"]) do
-
                 local name = tostring(key):gsub("recipe","")
-
                 table.insert(keys,tonumber(name)+1)
             end
             table.sort(keys, function(a,b) return a > b end)
@@ -149,22 +146,50 @@ function functions.addRecipe(groupID,recipe,max,min,priorety)
         end
     end
 end
+function functions.needinRecipe(groupID,recipeID,item)
+    local recipe = functions.getRecipe(groupID,recipeID)
+    if recipe ~= nil then
+        for _, value in pairs(recipe["needed"]) do
+            if value["name"] == item then
+                return true
+            end
+        end
+    end 
+    return false
 
+end
 function functions.addNeeded(groupID, recipeID, item,type,count)
     local recipe = functions.getRecipe(groupID,recipeID)
     if recipe ~= nil then
-        for _, need in pairs(recipe["needed"]) do
+        local keys = {}
+        local isBlacklist = false
+        for key, need in pairs(recipe["needed"]) do
             if need["name"] == item then
-                return nil
+                isBlacklist = true
             end
+            local name = tostring(key):gsub("need","")
+            table.insert(keys,tonumber(name)+1)
         end
-        local blacklist = {
-            name=item,
-            type=type,
-            count=count,
-        }
-        table.insert(recipe["needed"],blacklist)
+        if not isBlacklist then
+            table.sort(keys, function(a,b) return a > b end)
+            local id = keys[1] or 1
+
+            local blacklist = {
+                name=item,
+                type=type,
+                count=count,
+            }
+            recipe["needed"]["need"..id] = blacklist
+        end
+        
     end
+end
+function functions.removeNeeded(groupID,recipeID,needID)
+    local recipe = functions.getRecipe(groupID,recipeID)
+    if recipe ~= nil then
+        recipe["needed"][needID] = nil
+    end
+    
 end
 function functions.deleteRecipe(groupID,recipeID)
     local group = functions.getGroup(groupID)
@@ -212,6 +237,10 @@ function functions.equals2var(var1,sign, var2)
         return var1 > var2
     elseif sign == "!=" then
         return var1 ~= var2
+    elseif sign == "<=" then
+        return var1 <= var2
+    elseif sign == ">=" then
+        return var1 >= var2
     else
         return var1 == var2
     end

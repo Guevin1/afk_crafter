@@ -1,22 +1,32 @@
 playerTable = require("playerTable")
 local gui = require("ui.main")
-commands.add_command("testRecipe",nil, function (p1)
-    playerTable.addRecipe(1,"iron-gear-wheel",10)
-    playerTable.addRecipe(1,"copper-cable",10,0,10)
-    playerTable.addRecipe(1,"iron-stick",20,10)
-    playerTable.addRecipe(1,"uranium-processing",5,10)
-    local recipeID = playerTable.addRecipe(1,"inserter",20)
-    playerTable.addNeeded(1,"recipe"..(recipeID or 5),"electronic-circuit","!=",0)
-    playerTable.sortRecipes(1)
 
-end)
-commands.add_command("break",nil, function (p1)
-    print("Break")
-end)
-commands.add_command("addCollection",nil, function (p1)
-    local idCollection = #playerTable.getTableGroup()
-    playerTable.createGroup(game.get_player(p1.player_index),"Collection #"..tostring(idCollection))
-end)
+-- DEBUG
+-- commands.add_command("testRecipe",nil, function (p1)
+--     playerTable.addRecipe(1,"iron-gear-wheel",10)
+--     playerTable.addRecipe(1,"copper-cable",10,0,10)
+--     playerTable.addRecipe(1,"iron-stick",20,10)
+--     playerTable.addRecipe(1,"uranium-processing",5,10)
+--     local recipeID = playerTable.addRecipe(1,"inserter",20)
+--     playerTable.addNeeded(1,"recipe"..(recipeID or 5),"electronic-circuit","!=",0)
+--     playerTable.sortRecipes(1)
+
+-- end)
+-- commands.add_command("addCollection",nil, function (p1)
+--     local idCollection = #playerTable.getTableGroup()
+--     local p = game.get_player(p1.player_index)
+--     if p ~= nil then
+--         playerTable.createGroup(p,"Collection #"..tostring(idCollection))
+--     end
+-- end)
+-- commands.add_command("break",nil, function (p1)
+--     print("Break")
+-- end)
+
+function getSettings(type,name)
+        return settings[type]["afkCrafter_"..name].value
+end
+
 commands.add_command("resetafkc", nil, function (p1)
     playerTable.initTables()
     initModPlayers()
@@ -57,7 +67,7 @@ function crafting()
                             product = recipeForce.products[recipe["productID"]].name
                         end
                         local craftWithNeed = true
-                        if #recipe["needed"] > 0 then
+                        if table_size(recipe["needed"]) > 0 then
                             for _, need in pairs(recipe["needed"]) do
                                 itemsCount = player.get_item_count(need["name"])
                                 if not playerTable.equals2var(itemsCount,need["type"], need["count"]) then
@@ -81,7 +91,11 @@ function crafting()
                         end
                         
                         if craftRecipe and createRecipe and craftWithNeed then
-                            local craftSize = 1
+                            local craftSize =  player.mod_settings["afkCrafter_countCraft"].value
+                            if craftSize == 0 then
+                                craftSize = rsRecipe["max"] - countsInInventory
+                            end
+                            
                             local itemCountCraft = player.begin_crafting{count=craftSize,recipe=nameRecipe,silent=true}
                             if itemCountCraft ~= 0 then
                                 break
@@ -97,7 +111,7 @@ function crafting()
 end
 
 
-script.on_nth_tick(10,crafting)
+script.on_nth_tick(getSettings("startup","interval"),crafting)
 script.on_event(defines.events.on_player_joined_game, initModPlayers)
 script.on_init(initModPlayers)
 script.on_configuration_changed(initModPlayers)
