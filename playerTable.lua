@@ -29,6 +29,7 @@ end
 function functions.getRecipe(groupID, recipeID)
     local group = functions.getGroup(groupID)
     if group ~= nil then
+        local nameRecipe = "recipe"..recipeID
         return group["recipes"][recipeID]
     end
 end
@@ -121,6 +122,15 @@ function functions.addRecipe(groupID,recipe,max,min,priorety)
     local group = functions.getGroup(groupID)
     if group ~= nil then
         if not functions.recipeInGroup(groupID,recipe) then
+            local keys = {}
+            for key,_ in pairs(group["recipes"]) do
+
+                local name = tostring(key):gsub("recipe","")
+
+                table.insert(keys,tonumber(name)+1)
+            end
+            table.sort(keys, function(a,b) return a > b end)
+            local id = keys[1] or 1
             local recipeBody = {
                 name=recipe,
                 rs = {
@@ -133,9 +143,9 @@ function functions.addRecipe(groupID,recipe,max,min,priorety)
                 enabled = true,
                 productID = 1
             }
-            table.insert(group["recipes"], recipeBody)
+            group["recipes"]["recipe"..id]= recipeBody
             functions.sortRecipes(groupID)
-            return #group["recipes"]
+            
         end
     end
 end
@@ -156,22 +166,42 @@ function functions.addNeeded(groupID, recipeID, item,type,count)
         table.insert(recipe["needed"],blacklist)
     end
 end
+function functions.deleteRecipe(groupID,recipeID)
+    local group = functions.getGroup(groupID)
+    if group ~= nil then
+        group["recipes"][recipeID] = nil
+    end
+end
 
 function functions.addRecipePriorety(groupID,recipeID,count)
     local recipe = functions.getRecipe(groupID, recipeID)
+    local res = nil
     if recipe ~= nil then
         recipe["priorety"] = recipe["priorety"] + count
+        res = recipe["priorety"]
+        functions.sortRecipes(groupID)
     end
+    return res
 end
 function functions.sortRecipes(groupID)
     local group = functions.getGroup(groupID)
     if group ~= nil then
-        recipes = group["recipes"]
-        table.sort(recipes,function (a, b)
-            pr1 = a["priorety"]
-            pr2 = b["priorety"]
+        local recipes = group["recipes"]
+        local sorted_recipes = {}
+        for key, recipe in pairs(recipes) do
+            table.insert(sorted_recipes, {key = key, recipe = recipe})
+        end
+        table.sort(sorted_recipes, function(a, b)
+            local pr1 = a.recipe["priorety"] or 0
+            local pr2 = b.recipe["priorety"] or 0
             return pr1 < pr2
         end)
+        local tableNew = {}
+        for _, entry in ipairs(sorted_recipes) do
+            local key, recipe = entry.key, entry.recipe
+            tableNew[key] = recipe
+        end
+        group["recipes"] = tableNew
     end
 end
 

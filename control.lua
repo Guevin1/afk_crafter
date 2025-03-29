@@ -1,4 +1,4 @@
-local playerTable = require("playerTable")
+playerTable = require("playerTable")
 local gui = require("ui.main")
 commands.add_command("testRecipe",nil, function (p1)
     playerTable.addRecipe(1,"iron-gear-wheel",10)
@@ -6,7 +6,7 @@ commands.add_command("testRecipe",nil, function (p1)
     playerTable.addRecipe(1,"iron-stick",20,10)
     playerTable.addRecipe(1,"uranium-processing",5,10)
     local recipeID = playerTable.addRecipe(1,"inserter",20)
-    playerTable.addNeeded(1,recipeID or 5,"electronic-circuit","!=",0)
+    playerTable.addNeeded(1,"recipe"..(recipeID or 5),"electronic-circuit","!=",0)
     playerTable.sortRecipes(1)
 
 end)
@@ -46,7 +46,7 @@ function crafting()
             local crafting_queue = player.crafting_queue
             local group = playerTable.getGroup(playerInfo["active"])
             if (#group["surfaces"] == 0 or table.contains(group["surfaces"],player.surface_index)) and (crafting_queue == nil or #crafting_queue == 0) then
-                if (#group["recipes"] > 0) then
+                if (table_size(group["recipes"]) > 0) then
                     for _, recipe in pairs(group["recipes"]) do
                         local createRecipe = recipe["enabled"]
                         local nameRecipe = recipe["name"]
@@ -102,7 +102,6 @@ script.on_event(defines.events.on_player_joined_game, initModPlayers)
 script.on_init(initModPlayers)
 script.on_configuration_changed(initModPlayers)
 script.on_event(defines.events.on_player_created, initModPlayers)
-script.on_event(defines.events.on_gui_click, gui.GuiClick)
 table.contains = function(tbl, value)
     for _, v in ipairs(tbl) do
         if v == value then
