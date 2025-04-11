@@ -37,7 +37,10 @@ local function GuiClick(event)
             functionsGui.reloadRecipes(RecipeFrame,groupID)
         elseif action == "deleteRecipe" then
             playerTable.deleteRecipe(groupID,recipeID)
-            FrameRecipe.destroy()
+            if recipeID ~= nil then
+                    
+                FrameRecipe.destroy()
+            end
         end
     end
 end

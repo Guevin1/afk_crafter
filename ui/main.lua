@@ -204,14 +204,23 @@ function functionsGui.reloadRecipes(recipesBox,groupID,group)
         if value == nil then
             value = {}
         end
-        functionsGui.ItemBuildGUI(Table,value,groupID,key)
-        local neededList = Table.add{
-            type="table",
-            column_count=2,
-            name="neededList"
-        }
-        functionsGui.reloadNeeded(neededList,value,groupID,recipeID)
+        functionsGui.ItemBuild(Table,value,groupID,recipeID)
     end
+end
+---comment
+---@param Table LuaGuiElement
+---@param value any
+---@param groupID any
+---@param recipeID any
+function functionsGui.ItemBuild(Table,value,groupID,recipeID)
+    Table.clear()
+    functionsGui.ItemBuildGUI(Table,value,groupID,recipeID)
+    local neededList = Table.add{   
+        type="table",
+        column_count=2,
+        name="neededList"
+    }
+    functionsGui.reloadNeeded(neededList,value,groupID,recipeID)
 end
 function getStackSize(nameRecipe,idProduct)
     if nameRecipe ~= nil then
@@ -224,9 +233,12 @@ end
 
 ---comment
 ---@param Table LuaGuiElement
-function functionsGui.ItemBuildGUI(Table, value,groupID,key)
+function functionsGui.ItemBuildGUI(Table, value,groupID,recipeID)
     Table.clear()
-    local recipeID = "recipe"..key
+    
+    if type(recipeID) == "number" then
+        recipeID = "recipe"..recipeID
+    end
     if table_size(value) == 0 then
         recipeID = nil
     end
@@ -332,9 +344,10 @@ function functionsGui.ItemBuildGUI(Table, value,groupID,key)
     CountContainer.add{
         type="slider",
         minimum_value=rsT["min"],
-        maximum_value=maxCount*1,
+        maximum_value=rsT["min"]+maxCount*1,
         value=rsT["max"],
         name="slider",
+        value_step="1",
         tags={
             parent="afkCrafter",
             action="count",

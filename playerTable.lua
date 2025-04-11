@@ -203,7 +203,7 @@ function functions.removeNeeded(groupID,recipeID,needID)
 end
 function functions.deleteRecipe(groupID,recipeID)
     local group = functions.getGroup(groupID)
-    if group ~= nil then
+    if group ~= nil and recipeID ~= nil then
         group["recipes"][recipeID] = nil
     end
 end

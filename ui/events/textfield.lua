@@ -25,6 +25,15 @@ local function TextfieldChange(event)
             FrameRecipe.recipe.count.slider.slider_value=tonumber(event.text) or 0
         elseif action == "minRecipeCount" then
             recipe["rs"]["min"] = tonumber(event.text) or 0
+            maxCount = getStackSize(recipe["name"],recipe["productID"])
+            print(maxCount)
+            if maxCount == 0 then
+                maxCount = 1
+            end
+            local minC = tonumber(event.text) or 0
+            local SlVl = FrameRecipe.recipe.count.slider.slider_value
+            FrameRecipe.recipe.count.slider.set_slider_minimum_maximum(minC,minC+maxCount*1)
+            FrameRecipe.recipe.count.slider.slider_value = SlVl
         elseif action == "countBlack" then
             local needID = tags["needID"]
             recipe["needed"][needID]["count"] = tonumber(event.text) or 0

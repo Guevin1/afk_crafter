@@ -30,7 +30,7 @@ function Elemchange(event)
                     if recipeID ~= nil then
                             
                         recipe["name"] = val
-                        functionsGui.ItemBuildGUI(FrameRecipe.recipe,recipe,groupID,recipeID)
+                        functionsGui.ItemBuild(FrameRecipe,recipe,groupID,recipeID)
                     else
                         playerTable.addRecipe(groupID,val,1)
                         functionsGui.reloadRecipes(RecipeFrame,groupID)
