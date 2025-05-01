@@ -29,8 +29,6 @@ function checkbox(event)
                         if value.name ~=  "buttons" then
                             value.enabled = val
                             if value.children ~= nil then
-                                    
-                                print(#value.children)
                                 for k,v in pairs(value.children) do table.insert(elements,v) end
                             end
                         end

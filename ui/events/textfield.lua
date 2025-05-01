@@ -37,7 +37,11 @@ local function TextfieldChange(event)
         elseif action == "countBlack" then
             local needID = tags["needID"]
             recipe["needed"][needID]["count"] = tonumber(event.text) or 0
+        elseif action == "setPriorety" then
+            recipe["priorety"] = tonumber(event.text) or 100
+            playerTable.sortRecipes(groupID)
         end
+        
     end
 end
 script.on_event(defines.events.on_gui_text_changed, TextfieldChange)

@@ -242,8 +242,12 @@ function functionsGui.ItemBuildGUI(Table, value,groupID,recipeID)
     if table_size(value) == 0 then
         recipeID = nil
     end
-    local enabled = value["enabled"] or true
+
+    local enabled = value["enabled"] 
     local isEmpty = value["name"] ~= nil
+    if not isEmpty then
+        enabled = true
+    end
     local IandE= enabled and isEmpty
     local ElementGui = Table.add{
         type="flow",
