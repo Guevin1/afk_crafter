@@ -1,4 +1,30 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.2
+Date: 2025-05-01
+  Bugfixes:
+    - Priorety Textfield add logic
+    - Showing Enabled/Disabled
+---------------------------------------------------------------------------------------------------
+Version: 0.2.1
+Date: 2025-04-11
+  Bugfixes:
+    - Choose element 
+    - Slider
+---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2025-03-29
+  Major Features:
+    - Updated the mod for Factorio 2.0
+    - Added priority
+    - Added conditions for crafting
+  Changes:
+    - Added /resetAFKc to reset AFK crafter
+  Gui:
+    - Made the design worse
+  Features:
+    - Add craft groups
+    - Allow groups to work only on a specific surface
+---------------------------------------------------------------------------------------------------
 Version: 0.1.3
 Date: 2024-06-19
   Changes:
