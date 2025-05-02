@@ -19,3 +19,8 @@ styles["afkCrafter.numeric"] = {
     type = "textbox_style",
     width = 36
 }
+
+styles["afkCrafter.tabbed_pane"] = {
+    type="tabbed_pane_style",
+    padding=0
+}

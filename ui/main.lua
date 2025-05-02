@@ -7,6 +7,7 @@ require("events/checkbox")
 require("events/closegui")
 require("events/slider")
 require("events/dropdown")
+require("ItemChoose")
 function functionsGui.createFlowButton(player_index)
     local player = game.get_player(player_index)
     if player ~= nil then
@@ -28,7 +29,7 @@ function functionsGui.createFlowButton(player_index)
 end
 ---comment
 ---@param MainFrame LuaGuiElement
-function panelAdd(MainFrame)
+function panelAdd(MainFrame, name,parent)
     local panel = MainFrame.add{
         type="flow",
         name="panel",
@@ -38,7 +39,7 @@ function panelAdd(MainFrame)
         type="label",
         name="title",
         style="frame_title",
-        caption="AFK crafter"
+        caption=name
     }
     local em = panel.add{
         type="empty-widget",
@@ -53,7 +54,7 @@ function panelAdd(MainFrame)
         style="close_button",
         sprite="utility/close",
         tags={
-            parent="afkCrafter",
+            parent=parent,
             action="close"
         }
     }
@@ -72,26 +73,28 @@ function functionsGui.initScreen(player)
     }
     MainFrame.auto_center = true
     
-    panelAdd(MainFrame)
+    panelAdd(MainFrame,"AFK crafter", "afkCrafter")
     -- local TabFrame = MainFrame.add{type="flow", name="groups"}
     -- TabFrame.style.margin = 0
     local content = MainFrame.add{
-        type="flow",
-        name="content"
+        type="frame",
+        name="content", 
+        style="inside_shallow_frame"
     }
     local groupID = playerTable.getPlayer(player.index)["active"]
     group = playerTable.getGroup(groupID)
     local scrollPaneRecipes = content.add{
         type="scroll-pane",
         name="RecipeScroll",
-        vertical_scroll_policy="auto-and-reserve-space"
+        vertical_scroll_policy="always"
     }
     local recipesBox = scrollPaneRecipes.add{
-        type="frame",
-        style="inside_shallow_frame_with_padding",
+        type="table",
         direction="vertical",
         name="RecipeFrame",
+        column_count=1
     }
+    recipesBox.style.vertically_stretchable=true
     functionsGui.reloadRecipes(recipesBox,groupID,group)
 end
 ---comment
@@ -199,13 +202,18 @@ function functionsGui.reloadRecipes(recipesBox,groupID,group)
         local Table = recipesBox.add{
             type="frame",
             name=recipeID,
-            direction="vertical"
+            direction="vertical",
+            style="shallow_frame"
         }
         if value == nil then
             value = {}
         end
         functionsGui.ItemBuild(Table,value,groupID,recipeID)
     end
+    local emptyWidget = recipesBox.add{
+        type="empty-widget",
+        style="entity_frame_filler"
+    }
 end
 ---comment
 ---@param Table LuaGuiElement

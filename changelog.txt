@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.3
+Date: 2025-05-04
+  Changes:
+    - Changes Gui
+    - Priority adjustment now supports modifier keys. Holding Shift while clicking changes the priority by +1, holding Ctrl changes it by +10, and holding both Shift + Ctrl changes it by +50.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: 2025-05-01
   Bugfixes:
