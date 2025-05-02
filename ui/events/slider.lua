@@ -2,7 +2,8 @@
 function sliderEvent(event)
     local player = game.get_player(event.player_index)
     local tags = event.element.tags
-    if player ~= nil and tags["parent"] == "afkCrafter" then
+    log(event.element.slider_value)
+    if player ~= nil and functionsGui.ItemCheck(tags) then
         local action = tags["action"]
         local groupID = tags["groupID"]
         local recipeID = tags["recipeID"]
@@ -15,7 +16,7 @@ function sliderEvent(event)
         end
         local nameRecipe = nil
         local FrameRecipe = nil
-        if recipeID ~= nil then
+        if recipeID ~= nil and RecipeFrame ~= nil then
             FrameRecipe = RecipeFrame[recipeID]
         end
         if action=="count" then
@@ -25,6 +26,9 @@ function sliderEvent(event)
             end
             rs["max"] = val
             FrameRecipe.recipe.count.max.text = tostring(val)
+        elseif action=="newcount"  then
+            local new_item_count = discrete_slider.slider_value_to_count(event.element.slider_value, 100)
+            event.element.parent["max"].text = tostring(new_item_count)
         end
     end
 end

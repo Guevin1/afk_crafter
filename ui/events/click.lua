@@ -4,7 +4,7 @@
 local function GuiClick(event)
     local player = game.get_player(event.player_index)
     local tags = event.element.tags
-    if player ~= nil and table_size(tags) > 0 and tags["parent"] ~= nil and string.match(tags["parent"], "^afkCrafter") then
+    if player ~= nil and functionsGui.ItemCheck(tags) then
         local action = tags["action"]
         local groupID = tags["groupID"]
         local recipeID = tags["recipeID"]

@@ -1,5 +1,6 @@
 functionsGui = {}
 local mod_gui = require("mod-gui")
+discrete_slider = require("DiscreteSlider")
 require("events/click")
 require("events/textfield")
 require("events/elemchoose")
@@ -449,4 +450,7 @@ function functionsGui.ItemBuildGUI(Table, value,groupID,recipeID)
     }
 end
 
+function functionsGui.ItemCheck(tags)
+    return table_size(tags) > 0 and tags["parent"] ~= nil and string.match(tags["parent"], "^afkCrafter");
+end
 return functionsGui
